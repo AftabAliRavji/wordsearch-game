@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>al-Mahdi Wordsearch</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f4f4;
+    display: flex;
+}
+
+#home-screen {
+    width: 100%;
+    height: 100vh;
+    background: #0b1020;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.7s ease;
+}
+
+#home-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.home-btn {
+    padding: 15px 30px;
+    font-size: 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+}
+
+.btn1 { background: #4caf50; }
+.btn2 { background: #2196f3; }
+.btn3 { background: #9c27b0; }
+
+#definitions {
+    width: 260px;
+    background: white;
+    padding: 15px;
+    border-right: 2px solid #ccc;
+    height: 100vh;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+}
+
+#defs-content p {
+    margin: 6px 0;
+}
+
+#main {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    height: 100vh;
+    position: relative;
+}
+
+.level-section {
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.1);
+    display: none;
+    opacity: 0;
+}
+
+.level-section.active {
+    display: block;
+}
+
+.fade-in {
+    animation: fadeIn 0.6s forwards;
+}
+
+.fade-out {
+    animation: fadeOut 0.6s forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+table {
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+td {
+    width: 32px;
+    height: 32px;
+    text-align: center;
+    border: 1px solid #333;
+    font-size: 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, box-shadow 0.15s;
+    touch-action: none;
+}
+
+td.selected {
+    background: #fff9c4;
+    box-shadow: 0 0 8px #ffd54f;
+}
+
+td.found {
+    background: lightgreen;
+    box-shadow: none;
+}
+
+.word-list {
+    margin-top: 10px;
+}
+
+.word {
+    font-size: 16px;
+    margin: 3px 0;
+}
+
+.word.found {
+    text-decoration: line-through;
+    color: green;
+}
+
+.end-message {
+    margin-top: 15px;
+    padding: 10px;
+    background: #c8f7c5;
+    border: 1px solid #7ac27a;
+    border-radius: 6px;
+    display: none;
+}
+
+.btn-try {
+    background: #4caf50;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-level {
+    background: #2196f3;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-home {
+    background: #ff9800;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+</style>
+<script>
+/* WORD DEFINITIONS (MASTER DICTIONARY) */
+const definitionsByWord = {
+    ZUHUR: "Appearance / Manifestation of the Imam",
+    BADA: "A change in destiny by Allah’s wisdom",
+    MEHDI: "The Guided One, the promised saviour",
+    QAIM: "The One who rises to establish justice",
+    GAYBAH: "Occultation, the hidden state of the Imam",
+
+    IMAM: "Divinely appointed leader and guide",
+    MUNTAZAR: "The One who is awaited",
+    FARAJ: "Relief / Deliverance through the Imam’s reappearance",
+    RAJA: "Hope and longing for Allah’s mercy",
+    THAQALAYN: "The two weighty things: Qur’an and Ahl al‑Bayt",
+    WILAYA: "Spiritual authority and guardianship",
+
+    GHAIBATALKUBRA: "The Major Occultation of Imam al‑Mahdi",
+    ALQAIMBILHAQQ: "The one who rises with the Truth",
+    ALHUJJAHIBNALHASAN: "The Proof of Allah, son of al‑Hasan",
+    INTIDHAR: "Active waiting for the Imam’s return",
+    WILAYAT: "Divine leadership and loyalty to the Imam"
+};
+
+/* LEVEL DATA */
+const levels = {
+    easy: {
+        size: 12,
+        words: [
+            { clean: "ZUHUR", display: "zuhur" },
+            { clean: "BADA", display: "bada" },
+            { clean: "MEHDI", display: "mehdi" },
+            { clean: "QAIM", display: "qaim" },
+            { clean: "GAYBAH", display: "gaybah" }
+        ],
+        gridId: "easy-grid-container",
+        wordsId: "easy-words",
+        endId: "easy-end",
+        sectionId: "easy-section"
+    },
+    medium: {
+        size: 14,
+        words: [
+            { clean: "IMAM", display: "imam" },
+            { clean: "MUNTAZAR", display: "muntazar" },
+            { clean: "FARAJ", display: "faraj" },
+            { clean: "RAJA", display: "raja" },
+            { clean: "THAQALAYN", display: "thaqalayn" },
+            { clean: "WILAYA", display: "wilaya" }
+        ],
+        gridId: "medium-grid-container",
+        wordsId: "medium-words",
+        endId: "medium-end",
+        sectionId: "medium-section"
+    },
+    hard: {
+        size: 16,
+        words: [
+            { clean: "GHAIBATALKUBRA", display: "ghaibat-al-kubra" },
+            { clean: "ALQAIMBILHAQQ", display: "al-qaim bil-haqq" },
+            { clean: "ALHUJJAHIBNALHASAN", display: "al-hujjah ibn al-hasan" },
+            { clean: "INTIDHAR", display: "intidhar" },
+            { clean: "WILAYAT", display: "wilayat" }
+        ],
+        gridId: "hard-grid-container",
+        wordsId: "hard-words",
+        endId: "hard-end",
+        sectionId: "hard-section"
+    }
+};
+
+/* DYNAMIC DEFINITIONS */
+function showDefinitions(levelName){
+    const defs = document.getElementById("defs-content");
+    defs.innerHTML = "";
+
+    levels[levelName].words.forEach(w => {
+        const meaning = definitionsByWord[w.clean] || "No definition found";
+        defs.innerHTML += `<p><b>${w.display}</b> – ${meaning}</p>`;
+    });
+}
+
+/* GAME FLOW */
+function startGame(levelName){
+    document.getElementById("home-screen").classList.add("fade-out");
+
+    setTimeout(()=>{
+        document.getElementById("home-screen").style.display = "none";
+        hideAllLevels();
+        showLevel(levelName);
+    }, 700);
+}
+
+function goHome(){
+    hideAllLevels();
+    const home = document.getElementById("home-screen");
+    home.style.display = "flex";
+    void home.offsetWidth;
+    home.classList.remove("fade-out");
+}
+
+function showLevel(levelName){
+    showDefinitions(levelName);
+
+    const sec = document.getElementById(levels[levelName].sectionId);
+    sec.style.display = "block";
+    sec.style.opacity = 1;
+    sec.classList.add("active","fade-in");
+
+    setTimeout(()=>sec.classList.remove("fade-in"),600);
+}
+
+function hideAllLevels(){
+    Object.values(levels).forEach(l=>{
+        const sec = document.getElementById(l.sectionId);
+        sec.style.display = "none";
+        sec.style.opacity = 0;
+    });
+}
+
+/* GRID GENERATION */
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const directions = [
+    {dx:1,dy:0},{dx:-1,dy:0},{dx:0,dy:1},{dx:0,dy:-1},
+    {dx:1,dy:1},{dx:-1,dy:-1},{dx:1,dy:-1},{dx:-1,dy:1}
+];
+
+let grids = {};
+let foundWords = {};
+let selection = {};
+
+let mouseDown = false;
+let currentLevelDragging = null;
+
+let dragStartRow = null;
+let dragStartCol = null;
+let dragDirDx = 0;
+let dragDirDy = 0;
+let dragDirectionLocked = false;
+
+function createEmptyGrid(size){
+    const g = [];
+    for(let r=0; r<size; r++){
+        g[r] = [];
+        for(let c=0; c<size; c++){
+            g[r][c] = "";
+        }
+    }
+    return g;
+}
+
+function canPlace(grid, word, row, col, dir, size){
+    for(let i=0; i<word.length; i++){
+        const r = row + dir.dy * i;
+        const c = col + dir.dx * i;
+        if(r < 0 || r >= size || c < 0 || c >= size) return false;
+        if(grid[r][c] !== "" && grid[r][c] !== word[i]) return false;
+    }
+    return true;
+}
+
+function placeWord(grid, word, size){
+    let placed = false;
+    let tries = 0;
+
+    while(!placed && tries < 300){
+        tries++;
+        const dir = directions[Math.floor(Math.random() * directions.length)];
+        const row = Math.floor(Math.random() * size);
+        const col = Math.floor(Math.random() * size);
+
+        if(canPlace(grid, word, row, col, dir, size)){
+            for(let i=0; i<word.length; i++){
+                const r = row + dir.dy * i;
+                const c = col + dir.dx * i;
+                grid[r][c] = word[i];
+            }
+            placed = true;
+        }
+    }
+}
+
+function fillRandom(grid, size){
+    for(let r=0; r<size; r++){
+        for(let c=0; c<size; c++){
+            if(grid[r][c] === ""){
+                grid[r][c] = letters[Math.floor(Math.random() * letters.length)];
+            }
+        }
+    }
+}
+
+function renderLevel(levelName){
+    const level = levels[levelName];
+    const size = level.size;
+
+    grids[levelName] = createEmptyGrid(size);
+    foundWords[levelName] = {};
+    selection[levelName] = [];
+
+    level.words.forEach(wObj=>{
+        placeWord(grids[levelName], wObj.clean, size);
+        foundWords[levelName][wObj.clean] = false;
+    });
+
+    fillRandom(grids[levelName], size);
+
+    const container = document.getElementById(level.gridId);
+    container.innerHTML = "";
+
+    const table = document.createElement("table");
+    table.dataset.level = levelName;
+
+    for(let r=0; r<size; r++){
+        const rowEl = document.createElement("tr");
+        for(let c=0; c<size; c++){
+            const cell = document.createElement("td");
+            cell.textContent = grids[levelName][r][c];
+            cell.dataset.row = r;
+            cell.dataset.col = c;
+            cell.dataset.level = levelName;
+            rowEl.appendChild(cell);
+        }
+        table.appendChild(rowEl);
+    }
+
+    container.appendChild(table);
+
+    const wordsDiv = document.getElementById(level.wordsId);
+    wordsDiv.innerHTML = "";
+    level.words.forEach(wObj=>{
+        const item = document.createElement("div");
+        item.className = "word";
+        item.id = levelName + "-" + wObj.clean;
+        item.textContent = wObj.display;
+        wordsDiv.appendChild(item);
+    });
+
+    document.getElementById(level.endId).style.display = "none";
+
+    attachCellEvents(table, levelName);
+}
+
+/* HARD-LOCK DRAG SYSTEM */
+function attachCellEvents(table, levelName){
+    table.querySelectorAll("td").forEach(cell=>{
+        cell.addEventListener("pointerdown", e=>{
+            e.preventDefault();
+            mouseDown = true;
+            currentLevelDragging = levelName;
+
+            dragStartRow = parseInt(cell.dataset.row);
+            dragStartCol = parseInt(cell.dataset.col);
+            dragDirDx = 0;
+            dragDirDy = 0;
+            dragDirectionLocked = false;
+
+            clearSelection(levelName);
+            addToSelection(cell);
+        });
+    });
+}
+
+function handlePointer(e){
+    if(!mouseDown || !currentLevelDragging) return;
+
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    if(!el || el.tagName !== "TD") return;
+
+    const levelName = el.dataset.level;
+    if(levelName !== currentLevelDragging) return;
+
+    const row = parseInt(el.dataset.row);
+    const col = parseInt(el.dataset.col);
+
+    if(row === dragStartRow && col === dragStartCol) return;
+
+    const dRow = row - dragStartRow;
+    const dCol = col - dragStartCol;
+
+    if(!dragDirectionLocked){
+        let dx = Math.sign(dCol);
+        let dy = Math.sign(dRow);
+
+        if(dx === 0 && dy === 0) return;
+
+        if(dx !== 0 && dy !== 0 && Math.abs(dRow) !== Math.abs(dCol)) return;
+
+        dragDirDx = dx;
+        dragDirDy = dy;
+        dragDirectionLocked = true;
+    }
+
+    const dx = dragDirDx;
+    const dy = dragDirDy;
+
+    let kRow = dy !== 0 ? (row - dragStartRow) / dy : null;
+    let kCol = dx !== 0 ? (col - dragStartCol) / dx : null;
+
+    let k = null;
+
+    if(dx !== 0 && dy !== 0){
+        if(!Number.isInteger(kRow) || !Number.isInteger(kCol)) return;
+        if(kRow !== kCol) return;
+        k = kRow;
+    } else if(dx !== 0){
+        if(!Number.isInteger(kCol)) return;
+        k = kCol;
+    } else if(dy !== 0){
+        if(!Number.isInteger(kRow)) return;
+        k = kRow;
+    }
+
+    const newSelection = [];
+    const table = el.closest("table");
+    const step = k >= 0 ? 1 : -1;
+
+    for(let i = 0; i !== k + step; i += step){
+        const r = dragStartRow + dy * i;
+        const c = dragStartCol + dx * i;
+        const cell = table.querySelector(`td[data-row="${r}"][data-col="${c}"]`);
+        if(cell) newSelection.push(cell);
+    }
+
+    clearSelection(levelName);
+    newSelection.forEach(cell => addToSelection(cell));
+}
+
+document.addEventListener("pointermove", handlePointer);
+
+document.addEventListener("pointerup", ()=>{
+    if(mouseDown && currentLevelDragging){
+        finishSelection(currentLevelDragging);
+    }
+    mouseDown = false;
+    currentLevelDragging = null;
+});
+
+/* SELECTION LOGIC */
+function addToSelection(cell){
+    const levelName = cell.dataset.level;
+    const row = parseInt(cell.dataset.row);
+    const col = parseInt(cell.dataset.col);
+
+    if(!selection[levelName]) selection[levelName] = [];
+
+    const exists = selection[levelName].some(p => p.row === row && p.col === col);
+    if(!exists){
+        selection[levelName].push({row, col, cell});
+        cell.classList.add("selected");
+    }
+}
+
+function clearSelection(levelName){
+    if(!selection[levelName]) return;
+    selection[levelName].forEach(p => p.cell.classList.remove("selected"));
+    selection[levelName] = [];
+}
+
+function finishSelection(levelName){
+    if(!selection[levelName] || selection[levelName].length === 0) return;
+
+    const lettersSel = selection[levelName].map(p => p.cell.textContent).join("");
+    const reversed = lettersSel.split("").reverse().join("");
+
+    const level = levels[levelName];
+    let matched = null;
+
+    level.words.forEach(wObj=>{
+        if(lettersSel === wObj.clean || reversed === wObj.clean){
+            matched = wObj.clean;
+        }
+    });
+
+    if(matched){
+        selection[levelName].forEach(p=>{
+            p.cell.classList.remove("selected");
+            p.cell.classList.add("found");
+        });
+
+        foundWords[levelName][matched] = true;
+
+        const wordEl = document.getElementById(levelName + "-" + matched);
+        if(wordEl) wordEl.classList.add("found");
+
+        if(Object.values(foundWords[levelName]).every(v => v)){
+            document.getElementById(level.endId).style.display = "block";
+        }
+    } else {
+        selection[levelName].forEach(p => p.cell.classList.remove("selected"));
+    }
+
+    selection[levelName] = [];
+}
+
+function restartLevel(levelName){
+    renderLevel(levelName);
+}
+
+function initAllLevels(){
+    renderLevel("easy");
+    renderLevel("medium");
+    renderLevel("hard");
+}
+
+window.onload = initAllLevels;
+</script>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="home-screen">
+    <h1 style="font-size: 48px; margin-bottom: 30px;">al-Mahdi Wordsearch</h1>
+    <button class="home-btn btn1" onclick="startGame('easy')">Level 1</button>
+    <button class="home-btn btn2" onclick="startGame('medium')">Level 2</button>
+    <button class="home-btn btn3" onclick="startGame('hard')">Level 3</button>
+</div>
+
+<!-- DEFINITIONS PANEL -->
+<div id="definitions">
+    <h2>Definitions</h2>
+    <div id="defs-content"></div>
+</div>
+
+<!-- MAIN GAME AREA -->
+<div id="main">
+    <h1>al-Mahdi Wordsearch</h1>
+
+    <!-- LEVEL 1 -->
+    <div class="level-section" id="easy-section">
+        <h2>Level 1 - Easy</h2>
+        <button class="btn-home" onclick="goHome()">Home</button>
+
+        <div id="easy-grid-container"></div>
+        <div class="word-list" id="easy-words"></div>
+
+        <div class="end-message" id="easy-end">
+            <h3>GAME ENDED - LEVEL 1 COMPLETE!</h3>
+            <button class="btn-try" onclick="restartLevel('easy')">Try Again</button>
+            <button class="btn-level" onclick="startGame('medium')">Next Level</button>
+            <button class="btn-home" onclick="goHome()">Home</button>
+        </div>
+    </div>
+
+    <!-- LEVEL 2 -->
+    <div class="level-section" id="medium-section">
+        <h2>Level 2 - Medium</h2>
+        <button class="btn-home" onclick="goHome()">Home</button>
+
+        <div id="medium-grid-container"></div>
+        <div class="word-list" id="medium-words"></div>
+
+        <div class="end-message" id="medium-end">
+            <h3>GAME ENDED - LEVEL 2 COMPLETE!</h3>
+            <button class="btn-try" onclick="restartLevel('medium')">Try Again</button>
+            <button class="btn-level" onclick="startGame('hard')">Next Level</button>
+            <button class="btn-home" onclick="goHome()">Home</button>
+        </div>
+    </div>
+
+    <!-- LEVEL 3 -->
+    <div class="level-section" id="hard-section">
+        <h2>Level 3 - Hard</h2>
+        <button class="btn-home" onclick="goHome()">Home</button>
+
+        <div id="hard-grid-container"></div>
+        <div class="word-list" id="hard-words"></div>
+
+        <div class="end-message" id="hard-end">
+            <h3>GAME ENDED - LEVEL 3 COMPLETE!</h3>
+            <button class="btn-try" onclick="restartLevel('hard')">Try Again</button>
+            <button class="btn-home" onclick="goHome()">Home</button>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
