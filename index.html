@@ -11,7 +11,6 @@
         --accent: #f4b41a;
         --bg: #ffffff;
         --text: #222;
-        --grid-size: 15;
     }
 
     * {
@@ -24,20 +23,24 @@
         background: var(--bg);
         color: var(--text);
         font-family: system-ui, sans-serif;
-        padding: 15px;
+        padding: 10px;
+
+        /* MOBILE TOUCH FIX */
+        overscroll-behavior: none;
+        touch-action: none;
     }
 
     h1 {
         text-align: center;
         font-size: 2rem;
         color: var(--primary);
-        margin-bottom: 5px;
+        margin-bottom: 4px;
     }
 
     h3 {
         text-align: center;
         font-size: 1rem;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         color: #555;
     }
 
@@ -50,9 +53,10 @@
     .home-btn {
         display: block;
         width: 70%;
-        margin: 12px auto;
+        max-width: 320px;
+        margin: 10px auto;
         padding: 14px;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         border-radius: 10px;
         border: none;
         background: var(--primary);
@@ -60,106 +64,132 @@
         cursor: pointer;
     }
 
-    .home-btn:hover {
-        background: #0f4352;
+    /* GAME PAGE */
+    #gamePage { display: none; }
+
+    .top-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        align-items: center;
     }
 
-    /* GAME LAYOUT */
-    #gamePage {
-        display: none;
+    .btn {
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: none;
+        background: var(--primary);
+        color: white;
+        cursor: pointer;
+        font-size: 0.9rem;
     }
 
+    .btn.secondary {
+        background: #ddd;
+        color: #333;
+    }
+
+    #statusText {
+        margin-left: auto;
+        font-size: 0.85rem;
+    }
+
+    /* LAYOUT */
     .layout {
         display: grid;
-        grid-template-columns: 160px 1fr 150px;
-        gap: 10px;
-        height: calc(100vh - 120px); /* fits whole screen */
-        overflow: hidden;            /* no page scroll */
+        grid-template-columns: 170px 1fr 150px;
+        gap: 8px;
+        height: calc(100vh - 120px);
+        max-height: calc(100vh - 120px);
+        overflow: hidden;
     }
 
     @media (max-width: 900px) {
         .layout {
             grid-template-columns: 1fr;
+            grid-template-rows: auto auto auto;
             height: auto;
+            max-height: none;
         }
     }
 
     .card {
         background: #f7f7f7;
-        padding: 10px;
+        padding: 8px;
         border-radius: 10px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        overflow-y: auto;   /* only card scrolls if needed */
+        overflow-y: auto;
         max-height: 100%;
-    }
 
-    .definitions-list {
-        font-size: 0.85rem;
-        line-height: 1.4;
-    }
-
-    .definitions-list li + li {
-        margin-top: 5px;
-    }
-
-    .term {
-        font-weight: bold;
-        color: var(--primary);
+        /* MOBILE TOUCH FIX */
+        touch-action: none;
     }
 
     /* GRID */
+    .grid-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+    }
+
     #grid {
         display: grid;
         gap: 2px;
         background: #ccc;
+
+        /* MOBILE TOUCH FIX */
         touch-action: none;
-        max-height: 70vh;   /* grid never too tall */
-        max-width: 70vh;    /* keeps grid square */
-        margin: 0 auto;     /* centre grid */
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
     }
 
     .cell {
         background: white;
-        width: 100%;
         aspect-ratio: 1 / 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: clamp(0.8rem, 2.2vw, 1.1rem);
+        font-size: clamp(0.8rem, 2.4vw, 1.2rem);
         user-select: none;
         cursor: pointer;
     }
 
     .cell.highlight {
-    background: #ffe9a8;
-    border-radius: 50%;
-    box-shadow: 0 0 10px #ffdd77;
-}
-
+        background: #ffe9a8;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #ffdd77;
+    }
 
     .cell.found {
         background: #c7ffd0;
         color: #0b4b1f;
     }
-/* ROUND DRAG BUBBLE */
-.drag-circle {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 233, 168, 0.8);
-    border-radius: 50%;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 12px #ffdd77;
-    z-index: 9999;
-}
 
+    /* DRAG BUBBLE */
+    .drag-circle {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 233, 168, 0.8);
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 12px #ffdd77;
+        z-index: 9999;
+    }
 
     /* WORD LIST */
     .word-item {
         margin-bottom: 6px;
         position: relative;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
     .word-item.found::after {
@@ -171,39 +201,11 @@
         border-top: 2px solid red;
         transform: translateY(-50%);
     }
-
-    /* TOP BAR */
-    .top-bar {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-    }
-
-    .btn {
-        padding: 8px 14px;
-        border-radius: 8px;
-        border: none;
-        background: var(--primary);
-        color: white;
-        cursor: pointer;
-    }
-
-    .btn.secondary {
-        background: #ddd;
-        color: #333;
-    }
-
-    .btn.active {
-        background: var(--accent);
-        color: black;
-    }
 </style>
 </head>
 
 <body>
 
-<!-- HOME PAGE -->
 <div id="homePage">
     <h1>Al‑Mahdi Wordsearch</h1>
     <h3>by aliabbas</h3>
@@ -213,36 +215,33 @@
     <button class="home-btn" onclick="startLevel(3)">Hard Level</button>
 </div>
 
-<!-- GAME PAGE -->
 <div id="gamePage">
     <div class="top-bar">
         <button class="btn secondary" onclick="goHome()">Home</button>
         <button id="replayBtn" class="btn secondary">Replay Level</button>
-        <span id="statusText" style="margin-left:auto; font-size:0.9rem;"></span>
+        <span id="statusText"></span>
     </div>
 
     <div class="layout">
-        <!-- DEFINITIONS -->
         <div class="card">
-            <h3 style="text-align:left; margin-bottom:8px;">Definitions</h3>
+            <h3 style="text-align:left; margin-bottom:6px;">Definitions</h3>
             <ul id="definitions" class="definitions-list"></ul>
         </div>
 
-        <!-- GRID -->
-        <div class="card">
-            <h3 id="levelTitle" style="text-align:left; margin-bottom:8px;"></h3>
+        <div class="card grid-card">
+            <h3 id="levelTitle" style="text-align:left; width:100%; margin-bottom:6px;"></h3>
             <div id="grid"></div>
         </div>
 
-        <!-- WORD LIST -->
         <div class="card">
-            <h3 style="text-align:left; margin-bottom:8px;">Words</h3>
+            <h3 style="text-align:left; margin-bottom:6px;">Words</h3>
             <div id="wordList"></div>
         </div>
     </div>
 </div>
 
 <script>
+/* LEVEL DATA */
 const LEVELS = {
     1: {
         name: "Level 1 - Easy",
@@ -289,14 +288,17 @@ const LEVELS = {
     }
 };
 
+/* STATE */
 let currentLevel = 1;
 let grid = [];
 let placedWords = [];
 let gridSize = 0;
+
 let dragging = false;
 let dragPath = [];
 let dragCircle = null;
 
+/* PAGE SWITCHING */
 function goHome() {
     document.getElementById("homePage").style.display = "block";
     document.getElementById("gamePage").style.display = "none";
@@ -309,6 +311,7 @@ function startLevel(level) {
     buildLevel(level);
 }
 
+/* BUILD LEVEL */
 function buildLevel(levelNum) {
     const level = LEVELS[levelNum];
     gridSize = level.gridSize;
@@ -346,6 +349,7 @@ function normalize(w) {
     return w.replace(/[^A-Z]/gi,"").toUpperCase();
 }
 
+/* GRID GENERATION */
 function generateGrid(level) {
     grid = Array.from({length:gridSize},()=>Array(gridSize).fill(""));
     placedWords = [];
@@ -428,57 +432,58 @@ function renderGrid() {
     }
 }
 
+/* PURE FINGER‑TRACE DRAG ENGINE */
 function attachGridEvents() {
     const g = document.getElementById("grid");
+
+    /* MOBILE FIX: allow touchmove */
+    g.addEventListener("touchstart", e => e.preventDefault(), { passive: false });
 
     g.onmousedown = e => {
         const cell = e.target.closest(".cell");
         if (!cell) return;
-        startDrag(cell);
+        startDrag(cell, e.clientX, e.clientY);
     };
-g.ontouchmove = e => {
-    if (!dragging) return;
-    const t = e.touches[0];
-    createDragCircle(t.clientX, t.clientY);
-    const cell = document.elementFromPoint(t.clientX,t.clientY);
-    if (cell && cell.classList.contains("cell")) addDrag(cell);
-    e.preventDefault();
-};
 
+    g.onmousemove = e => {
+        if (!dragging) return;
+        const cell = document.elementFromPoint(e.clientX, e.clientY);
+        if (cell && cell.classList.contains("cell")) addToPath(cell);
+        moveDragCircle(e.clientX, e.clientY);
+    };
 
     document.onmouseup = endDrag;
 
     g.ontouchstart = e => {
         const t = e.touches[0];
-        const cell = document.elementFromPoint(t.clientX,t.clientY);
-        if (cell && cell.classList.contains("cell")) startDrag(cell);
+        const cell = document.elementFromPoint(t.clientX, t.clientY);
+        if (cell && cell.classList.contains("cell")) {
+            startDrag(cell, t.clientX, t.clientY);
+        }
     };
 
     g.ontouchmove = e => {
         if (!dragging) return;
         const t = e.touches[0];
-        const cell = document.elementFromPoint(t.clientX,t.clientY);
-        if (cell && cell.classList.contains("cell")) addDrag(cell);
+        const cell = document.elementFromPoint(t.clientX, t.clientY);
+        if (cell && cell.classList.contains("cell")) addToPath(cell);
+        moveDragCircle(t.clientX, t.clientY);
         e.preventDefault();
     };
 
     g.ontouchend = endDrag;
 }
 
-function startDrag(cell) {
+function startDrag(cell, x, y) {
     dragging = true;
     dragPath = [];
-    highlight(cell);
+    clearHighlights();
+    addToPath(cell);
+    createDragCircle(x, y);
 }
 
-function addDrag(cell) {
-    highlight(cell);
-}
-
-function highlight(cell) {
+function addToPath(cell) {
     const key = cell.dataset.r + "," + cell.dataset.c;
-
-    // Don’t add the same cell twice
     if (dragPath.some(p => p.key === key)) return;
 
     dragPath.push({
@@ -488,10 +493,88 @@ function highlight(cell) {
         el: cell
     });
 
-    // Add the highlight class
     cell.classList.add("highlight");
 }
 
+function moveDragCircle(x, y) {
+    if (!dragCircle) return;
+    dragCircle.style.left = x + "px";
+    dragCircle.style.top = y + "px";
+}
+
+function endDrag() {
+    if (!dragging) return;
+
+    removeDragCircle();
+    evaluateDragPath();
+    dragging = false;
+    dragPath = [];
+}
+
+/* STRAIGHTNESS CHECK */
+function isStraight(path) {
+    if (path.length < 2) return false;
+
+    const r0 = path[0].r;
+    const c0 = path[0].c;
+    const r1 = path[path.length - 1].r;
+    const c1 = path[path.length - 1].c;
+
+    const dr = Math.sign(r1 - r0);
+    const dc = Math.sign(c1 - c0);
+
+    if (dr === 0 && dc === 0) return false;
+
+    for (let i = 1; i < path.length; i++) {
+        const expectedR = r0 + dr * i;
+        const expectedC = c0 + dc * i;
+        if (path[i].r !== expectedR || path[i].c !== expectedC) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/* WORD CHECK */
+function evaluateDragPath() {
+    if (!isStraight(dragPath)) {
+        clearHighlights();
+        updateStatus();
+        return;
+    }
+
+    const letters = dragPath.map(p => p.el.textContent).join("");
+    const reversed = letters.split("").reverse().join("");
+
+    let matchedWord = null;
+    for (const w of placedWords) {
+        if (letters === w.word || reversed === w.word) {
+            matchedWord = w.word;
+            break;
+        }
+    }
+
+    if (matchedWord) {
+        dragPath.forEach(p => {
+            p.el.classList.remove("highlight");
+            p.el.classList.add("found");
+        });
+
+        const item = document.querySelector(`.word-item[data-word="${matchedWord}"]`);
+        if (item) item.classList.add("found");
+    } else {
+        clearHighlights();
+    }
+
+    updateStatus();
+}
+
+/* HIGHLIGHT HELPERS */
+function clearHighlights() {
+    document.querySelectorAll(".cell.highlight").forEach(c => c.classList.remove("highlight"));
+}
+
+/* DRAG CIRCLE */
 function createDragCircle(x, y) {
     if (!dragCircle) {
         dragCircle = document.createElement("div");
@@ -509,47 +592,14 @@ function removeDragCircle() {
     }
 }
 
-function endDrag() {
-    if (!dragging) return;
-
-    const letters = dragPath.map(p=>grid[p.r][p.c]).join("");
-    const reversed = letters.split("").reverse().join("");
-
-    let match = null;
-    for (const w of placedWords) {
-        if (letters===w.word || reversed===w.word) {
-            match = w;
-            break;
-        }
-    }
-
-    if (match) {
-        match.cells.forEach(p=>{
-            const cell = document.querySelector(`.cell[data-r="${p.r}"][data-c="${p.c}"]`);
-            cell.classList.remove("highlight");
-            cell.classList.add("found");
-        });
-
-        const item = document.querySelector(`.word-item[data-word="${match.word}"]`);
-        if (item) item.classList.add("found");
-    }
-
-    document.querySelectorAll(".cell.highlight").forEach(c=>c.classList.remove("highlight"));
-
-    updateStatus();
-removeDragCircle();
-
-    dragging = false;
-    dragPath = [];
-}
-
+/* STATUS */
 function updateStatus() {
     const total = LEVELS[currentLevel].words.length;
     const found = document.querySelectorAll(".word-item.found").length;
     document.getElementById("statusText").textContent = `Found ${found} / ${total}`;
 }
 
-/* show home first */
+/* SHOW HOME FIRST */
 goHome();
 </script>
 
